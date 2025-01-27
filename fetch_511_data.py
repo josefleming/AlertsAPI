@@ -33,3 +33,5 @@ for alert in data:
 
 with open("alerts.geojson", "w") as f:
     json.dump(geojson, f)
+
+print("GeoJSON file created successfully.")
