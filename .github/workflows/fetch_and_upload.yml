@@ -1,43 +1,27 @@
-name: Fetch and Upload 511 Alerts
+name: Update GeoJSON
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Runs every 5 minutes
-  workflow_dispatch:
-
-permissions:
-  contents: write  # Grant write permissions
+    - cron: '0 0 * * *'  # Runs daily at midnight
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
-  fetch-and-upload:
+  update_geojson:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.x'
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install requests
+          pip install requests geojson
 
-      - name: Fetch 511 Alerts and Convert to GeoJSON
-        run: python AlertsAPI/fetch_511_data.py
-
-      - name: List files
-        run: ls -la AlertsAPI
-
-      - name: Commit GeoJSON file
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run script to generate GeoJSON
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git add AlertsAPI/alerts.geojson
-          git commit -m 'Add GeoJSON file'
-          git push
+          python alerts.py
