@@ -1,37 +1,30 @@
 import requests
-import json
 
-url = "https://511on.ca/api/v2/get/alerts?format=json&lang=en"
+# API endpoint
+url = 'https://511on.ca/api/v2/get/alerts'
+
+# Fetch data
 response = requests.get(url)
-data = response.json()
+alerts = response.json()
 
-# Convert to GeoJSON format
-geojson = {
-    "type": "FeatureCollection",
-    "features": []
-}
+import geojson
 
-for alert in data:
-    feature = {
-        "type": "Feature",
-        "properties": {
-            "Id": alert["Id"],
-            "Message": alert["Message"],
-            "Notes": alert["Notes"],
-            "StartTime": alert["StartTime"],
-            "EndTime": alert["EndTime"],
-            "Regions": alert["Regions"],
-            "HighImportance": alert["HighImportance"],
-            "SendNotification": alert["SendNotification"]
-        },
-        "geometry": {
-            "type": "Point",
-            "coordinates": [0, 0]  # Placeholder coordinates
-        }
-    }
-    geojson["features"].append(feature)
+# Function to convert alerts to GeoJSON features
+def alerts_to_geojson(alerts):
+    features = []
+    for alert in alerts:
+        # Ensure the alert has latitude and longitude
+        if 'latitude' in alert and 'longitude' in alert:
+            point = geojson.Point((alert['longitude'], alert['latitude']))
+            properties = {key: alert[key] for key in alert if key not in ['latitude', 'longitude']}
+            features.append(geojson.Feature(geometry=point, properties=properties))
+    return geojson.FeatureCollection(features)
 
-with open("alerts.geojson", "w") as f:
-    json.dump(geojson, f)
+# Convert alerts to GeoJSON
+geojson_data = alerts_to_geojson(alerts)
 
-print("GeoJSON file created successfully.")
+# Save to a file
+with open('alerts.geojson', 'w') as f:
+    geojson.dump(geojson_data, f)
+
+
