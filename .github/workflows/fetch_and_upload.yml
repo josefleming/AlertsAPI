@@ -26,6 +26,13 @@ jobs:
       - name: Fetch 511 Alerts and Convert to GeoJSON
         run: python fetch_511_data.py
 
-      - name: Upload GeoJSON to ArcGIS Online
+      - name: List files
+        run: ls -la
+
+      - name: Commit GeoJSON file
         run: |
-       
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add alerts.geojson
+          git commit -m 'Add GeoJSON file'
+          git push
